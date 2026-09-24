@@ -1,0 +1,37 @@
+body {
+  font-family: sans-serif;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  margin: 20px;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.status-box {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+button {
+  background: #45475a;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+button.primary {
+  background: #89b4fa;
+  color: #11111b;
+  font-weight: bold;
+}
+pre {
+  background: #11111b;
+  padding: 15px;
+  border-radius: 6px;
+  height: 350px;
+  overflow-y: auto;
+  color: #a6e3a1;
+}

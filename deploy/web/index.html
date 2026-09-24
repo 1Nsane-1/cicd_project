@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CI/CD Dashboard C++</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>CI/CD Pipeline Dashboard</h1>
+      <div class="status-box">Статус: <span id="status">IDLE</span></div>
+      <div class="controls">
+        <button onclick="triggerApi('/api/build')">Сборка</button>
+        <button onclick="triggerApi('/api/test')">Тестирование</button>
+        <button onclick="triggerApi('/api/deploy')">Развертывание</button>
+        <button onclick="triggerApi('/api/run')" class="primary">
+          Запустить весь Пайплайн
+        </button>
+      </div>
+      <h2>Логи выполнения</h2>
+      <pre id="logs"></pre>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

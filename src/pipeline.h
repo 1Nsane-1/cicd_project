@@ -43,20 +43,44 @@ public:
     bool execute_build(const std::string& source_dir, const std::string& output_dir) {
         log("[BUILD] Compiling C++ source files...");
         fs::create_directories(output_dir);
-        std::string cmd = "g++ -std=c++17 " + source_dir + "/*.cpp -o " + output_dir + "/app.exe";
+        
+        std::string cmd = "cmd.exe /c g++ -std=c++17 " + source_dir + "/main.cpp -o " + output_dir + "/app.exe -lws2_32";
+        
         std::string out;
         bool ok = run_command(cmd, out);
-        log(out);
-        if (!ok) log("[BUILD] Failed!");
-        else log("[BUILD] Success: " + output_dir + "/app.exe created.");
+        if (!out.empty()) log(out);
+        
+        if (!ok) {
+            log("[BUILD] Failed!");
+        } else {
+            log("[BUILD] Success: " + output_dir + "/app.exe created.");
+        }
         return ok;
     }
 
     bool execute_test() {
-        log("[TEST] Running unit tests...");
+        log("[TEST] Compiling unit tests...");
         std::string out;
-        bool ok = run_command("g++ -std=c++17 ./tests/sample_test.cpp -o ./bin/tests.exe && ./bin/tests.exe", out);
-        log(out);
+        
+        // Шаг 1: Компиляция бинарника тестов
+        std::string compile_cmd = "cmd.exe /c g++ -std=c++17 ./tests/sample_test.cpp -o ./bin/tests.exe";
+        if (!run_command(compile_cmd, out)) {
+            if (!out.empty()) log(out);
+            log("[TEST] Compilation failed!");
+            return false;
+        }
+
+        log("[TEST] Executing unit tests...");
+        // Шаг 2: Запуск скомпилированных тестов
+        std::string run_cmd = "cmd.exe /c .\\bin\\tests.exe";
+        bool ok = run_command(run_cmd, out);
+        if (!out.empty()) log(out);
+
+        if (!ok) {
+            log("[TEST] Test suite failed!");
+        } else {
+            log("[TEST] All tests passed!");
+        }
         return ok;
     }
 

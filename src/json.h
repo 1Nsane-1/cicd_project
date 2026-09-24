@@ -23,7 +23,19 @@ struct JsonValue {
             case JsonType::Null: return "null";
             case JsonType::Boolean: return bool_val ? "true" : "false";
             case JsonType::Number: return std::to_string(num_val);
-            case JsonType::String: return "\"" + str_val + "\"";
+            case JsonType::String: {
+                std::string escaped = "\"";
+                for (char c : str_val) {
+                    if (c == '"') escaped += "\\\"";
+                    else if (c == '\\') escaped += "\\\\";
+                    else if (c == '\n') escaped += "\\n";
+                    else if (c == '\r') escaped += "\\r";
+                    else if (c == '\t') escaped += "\\t";
+                    else escaped += c;
+                }
+                escaped += "\"";
+                return escaped;
+            }
             case JsonType::Array: {
                 std::string res = "[";
                 for (size_t i = 0; i < arr_val.size(); ++i) {
