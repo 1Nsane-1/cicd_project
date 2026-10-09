@@ -1,7 +1,9 @@
 {
   "pipeline": [
-    { "stage": "build", "source": "./src", "output": "./bin" },
-    { "stage": "test" },
+    { "stage": "lint", "source": "./sample_app/src" },
+    { "stage": "build", "source": "./sample_app/src", "output": "./bin" },
+    { "stage": "test", "tests": "./sample_app/tests" },
+    { "stage": "script", "path": "./scripts/custom_step.sh" },
     { "stage": "deploy", "source": "./bin", "target": "./deploy" }
   ]
 }
