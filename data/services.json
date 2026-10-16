@@ -1,0 +1,7 @@
+{
+    "services": [
+      {"name": "task_service", "port": 8081},
+      {"name": "user_service", "port": 8082},
+      {"name": "notify_service", "port": 8083}
+    ]
+  }

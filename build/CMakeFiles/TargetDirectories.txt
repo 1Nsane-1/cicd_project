@@ -1,5 +1,0 @@
-/home/student/Рабочий стол/cicd_project/build/CMakeFiles/ci-cd.dir
-/home/student/Рабочий стол/cicd_project/build/CMakeFiles/lint.dir
-/home/student/Рабочий стол/cicd_project/build/CMakeFiles/notify.dir
-/home/student/Рабочий стол/cicd_project/build/CMakeFiles/edit_cache.dir
-/home/student/Рабочий стол/cicd_project/build/CMakeFiles/rebuild_cache.dir

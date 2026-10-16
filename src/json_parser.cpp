@@ -1,141 +1,67 @@
-#include "json_parser.hpp"
+#include <string>
+#include <vector>
 #include <fstream>
 #include <sstream>
-#include <cctype>
 
-class Tokenizer {
-    std::string src;
-    size_t pos = 0;
-
-    void skipWhitespace() {
-        while (pos < src.length() && (src[pos] == ' ' || src[pos] == '\t' || src[pos] == '\n' || src[pos] == '\r')) {
-            pos++;
-        }
-    }
-
-    char peek() {
-        skipWhitespace();
-        return (pos < src.length()) ? src[pos] : '\0';
-    }
-
-    char get() {
-        skipWhitespace();
-        return (pos < src.length()) ? src[pos++] : '\0';
-    }
-
-    bool match(char expected) {
-        if (peek() == expected) {
-            get();
-            return true;
-        }
-        return false;
-    }
-
-    std::string parseString() {
-        if (get() != '"') throw std::runtime_error("Ожидалось начало строки ('\"')");
-        std::string res;
-        while (pos < src.length()) {
-            char c = src[pos++];
-            if (c == '"') return res;
-            if (c == '\\' && pos < src.length()) {
-                char esc = src[pos++];
-                if (esc == 'n') res += '\n';
-                else if (esc == 't') res += '\t';
-                else res += esc;
-            } else {
-                res += c;
-            }
-        }
-        throw std::runtime_error("Незавершенная строка в JSON");
-    }
-
-    double parseNumber() {
-        size_t start = pos;
-        if (src[pos] == '-') pos++;
-        while (pos < src.length() && (std::isdigit(src[pos]) || src[pos] == '.')) {
-            pos++;
-        }
-        return std::stod(src.substr(start, pos - start));
-    }
-
-public:
-    Tokenizer(std::string s) : src(std::move(s)) {}
-
-    JsonValue parseValue() {
-        skipWhitespace();
-        char c = peek();
-        if (c == '{') return parseObject();
-        if (c == '[') return parseArray();
-        if (c == '"') {
-            JsonValue v;
-            v.type = JsonType::String;
-            v.str_val = parseString();
-            return v;
-        }
-        if (std::isdigit(c) || c == '-') {
-            JsonValue v;
-            v.type = JsonType::Number;
-            v.num_val = parseNumber();
-            return v;
-        }
-        if (c == 't' || c == 'f') {
-            std::string w;
-            while (pos < src.length() && std::isalpha(src[pos])) w += src[pos++];
-            JsonValue v;
-            v.type = JsonType::Boolean;
-            v.bool_val = (w == "true");
-            return v;
-        }
-        if (c == 'n') {
-            std::string w;
-            while (pos < src.length() && std::isalpha(src[pos])) w += src[pos++];
-            JsonValue v;
-            v.type = JsonType::Null;
-            return v;
-        }
-        throw std::runtime_error(std::string("Некорректный символ в JSON: ") + c);
-    }
-
-    JsonValue parseObject() {
-        get();
-        JsonValue obj;
-        obj.type = JsonType::Object;
-        if (peek() == '}') { get(); return obj; }
-        while (true) {
-            std::string key = parseString();
-            if (!match(':')) throw std::runtime_error("Ожидался символ ':' после ключа");
-            obj.obj_val[key] = parseValue();
-            if (match('}')) break;
-            if (!match(',')) throw std::runtime_error("Ожидался символ ',' или '}'");
-        }
-        return obj;
-    }
-
-    JsonValue parseArray() {
-        get();
-        JsonValue arr;
-        arr.type = JsonType::Array;
-        if (peek() == ']') { get(); return arr; }
-        while (true) {
-            arr.arr_val.push_back(parseValue());
-            if (match(']')) break;
-            if (!match(',')) throw std::runtime_error("Ожидался символ ',' или ']'");
-        }
-        return arr;
-    }
+struct Task {
+    int id;
+    std::string title;
+    bool completed;
 };
 
-JsonValue JsonParser::parse(const std::string& json_str) {
-    Tokenizer t(json_str);
-    return t.parseValue();
-}
+class JsonParser {
+public:
+    static std::vector<Task> parseTasks(const std::string& filepath) {
+        std::vector<Task> tasks;
+        std::ifstream file(filepath);
+        if (!file.is_open()) return tasks;
 
-JsonValue JsonParser::parseFile(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
-        throw std::runtime_error("Ошибка открытия файла конфигурации: " + filepath);
+        std::string line;
+        Task currentTask{0, "", false};
+        bool inTask = false;
+
+        while (std::getline(file, line)) {
+            if (line.find("{") != std::string::npos) {
+                inTask = true;
+                currentTask = {0, "", false};
+            }
+            if (inTask) {
+                if (line.find("\"id\"") != std::string::npos) {
+                    size_t colon = line.find(":");
+                    currentTask.id = std::stoi(line.substr(colon + 1));
+                }
+                if (line.find("\"title\"") != std::string::npos) {
+                    size_t first = line.find("\"");
+                    size_t second = line.rfind("\"");
+                    // Упрощенный поиск строки
+                    size_t start = line.find(":", first);
+                    size_t q1 = line.find("\"", start);
+                    size_t q2 = line.rfind("\"");
+                    currentTask.title = line.substr(q1 + 1, q2 - q1 - 1);
+                }
+                if (line.find("\"completed\"") != std::string::npos) {
+                    currentTask.completed = (line.find("true") != std::string::npos);
+                }
+            }
+            if (line.find("}") != std::string::npos && inTask) {
+                tasks.push_back(currentTask);
+                inTask = false;
+            }
+        }
+        return tasks;
     }
-    std::stringstream ss;
-    ss << file.rdbuf();
-    return parse(ss.str());
-}
+
+    static void saveTasks(const std::string& filepath, const std::vector<Task>& tasks) {
+        system("mkdir -p data");
+        std::ofstream file(filepath);
+        file << "[\n";
+        for (size_t i = 0; i < tasks.size(); ++i) {
+            file << "  {\n";
+            file << "    \"id\": " << tasks[i].id << ",\n";
+            file << "    \"title\": \"" << tasks[i].title << "\",\n";
+            file << "    \"completed\": " << (tasks[i].completed ? "true" : "false") << "\n";
+            file << "  }" << (i + 1 < tasks.size() ? "," : "") << "\n";
+        }
+        file << "]\n";
+    }
+};
