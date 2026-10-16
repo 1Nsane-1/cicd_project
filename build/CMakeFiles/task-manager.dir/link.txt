@@ -1,0 +1,1 @@
+/usr/bin/c++ "CMakeFiles/task-manager.dir/src/main.cpp.o" -o task-manager  -ldl -lpthread 

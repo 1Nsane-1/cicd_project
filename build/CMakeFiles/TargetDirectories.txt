@@ -1,0 +1,3 @@
+/home/student/Рабочий стол/cicd_project/build/CMakeFiles/task-manager.dir
+/home/student/Рабочий стол/cicd_project/build/CMakeFiles/edit_cache.dir
+/home/student/Рабочий стол/cicd_project/build/CMakeFiles/rebuild_cache.dir
